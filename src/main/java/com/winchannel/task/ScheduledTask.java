@@ -193,6 +193,19 @@ public class ScheduledTask {
     
     
     
+    
+    
+    /**
+     * 增加 中间记录ID到 Prop中
+     * 
+     * 50-100 记录ID到Prop一次
+     * 
+     * @param currentT
+     * @param T_ID_POOL
+     * @return
+     * @throws SQLException
+     */
+    
     private boolean cleanPathHandler(Thread currentT,List<Long> T_ID_POOL) throws SQLException{
     	
     	System.out.println("处理线程："+currentT.getName());
@@ -207,6 +220,8 @@ public class ScheduledTask {
     	try{
     		if(T_ID_POOL!=null && T_ID_POOL.size()>0){
         		
+    			int count = 0;
+    			
         		for(int index=0;index<T_ID_POOL.size();index++){
         			
         			curr_id = T_ID_POOL.get(index);
@@ -242,6 +257,16 @@ public class ScheduledTask {
                     	
                     }
 
+                    count++;
+                    // 记录一次
+                    if(count==77){
+                    	if(Constant.T1.equals(currentT.getName())){
+                    		PropUtil.setProp(Constant.T1_START_ID, curr_id+"");
+                    	} else if(Constant.T2.equals(currentT.getName())){
+                    		PropUtil.setProp(Constant.T2_START_ID, curr_id+"");
+                    	}
+                    }
+                    
         		}
         		
         		return true;
