@@ -1,15 +1,5 @@
 package com.winchannel;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Service;
-
-import com.winchannel.service.DemoService;
 
 /*
 @Service("register") 

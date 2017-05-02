@@ -4,7 +4,7 @@
 	<groupId>DataM</groupId>
 	<artifactId>DataM</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	
+
 	<packaging>jar</packaging>
 
 	<properties>
@@ -49,6 +49,13 @@
 			<artifactId>sqljdbc4</artifactId>
 			<version>4.0</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -124,37 +131,37 @@
 					</archive>
 				</configuration>
 			</plugin>
-			
-			
-			<plugin>  
-              <groupId>org.apache.maven.plugins</groupId>  
-              <artifactId>maven-compiler-plugin</artifactId>  
-              <executions>  
-                  <execution>  
-                      <id>default-compile</id>  
-                      <phase>compile</phase>  
-                      <goals>  
-                          <goal>compile</goal>  
-                      </goals>  
-                      <configuration>  
-                          <encoding>UTF-8</encoding>  
-                      </configuration>  
-                  </execution>  
-              </executions>  
-          </plugin>
 
-	<!-- <plugin> <artifactId>maven-compiler-plugin</artifactId> </plugin> -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- <plugin> <artifactId>maven-compiler-plugin</artifactId> </plugin> -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 		</plugins>
 	</build>

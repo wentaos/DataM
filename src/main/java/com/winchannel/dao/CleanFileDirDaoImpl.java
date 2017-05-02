@@ -1,6 +1,7 @@
 package com.winchannel.dao;
 
 import com.winchannel.bean.Photo;
+import com.winchannel.utils.DBUtil;
 import com.winchannel.utils.PropUtil;
 
 import org.apache.log4j.Logger;
@@ -56,6 +57,8 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
             	id_pool.add(id);
             }
 
+            DBUtil.closeDbResources(conn, pstmt, rs);
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -84,7 +87,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                 photo.setImgUrl(rs.getString("IMG_URL"));
                 photo.setImgAbsPath(rs.getString("ABSOLUTE_PATH"));
             }
-
+            DBUtil.closeDbResources(conn, pstmt, rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -116,7 +119,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                 photo.setImgAbsPath(rs.getString("ABSOLUTE_PATH"));
                 photoList.add(photo);
             }
-
+            DBUtil.closeDbResources(conn, pstmt, rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -144,6 +147,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                     break;
                 }
             }
+            
             return funcCode;
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,6 +175,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
             int record = pstmt.executeUpdate();
             conn.commit();// 提交Update
             logger.info("Update Success! 事务提交！");
+            DBUtil.closeDbResources(conn, pstmt, null);
             return record;
         }catch (Exception e){
             logger.error("Dao Update Photo Error!");
@@ -208,6 +213,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                     return ID;
                 }
             }
+            DBUtil.closeDbResources(conn, pstmt, rs);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -229,7 +235,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                 funcCode = rs.getString("FUNC_CODE");
                 logger.info("获取到FUNC_CODE = " + funcCode);
             }
-
+            DBUtil.closeDbResources(conn, pstmt, rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -238,19 +244,6 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
 
 
-
-    private Connection getConnection() {
-        Connection conn = null;
-        try {
-            Class.forName(driver);
-            conn = DriverManager.getConnection(dbUrl, userName, passWord);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return conn;
-    }
 
 	@Override
 	public Long selectPhotoMinId() {
@@ -274,6 +267,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
                     return ID;
                 }
             }
+            DBUtil.closeDbResources(conn, pstmt, rs);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -291,10 +285,23 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, ID);
             pstmt.executeUpdate();
+            DBUtil.closeDbResources(conn, pstmt, null);
         }catch (Exception e){
             e.printStackTrace();
         }
 	}
 
+    private Connection getConnection() {
+        Connection conn = null;
+        try {
+            Class.forName(driver);
+            conn = DriverManager.getConnection(dbUrl, userName, passWord);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return conn;
+    }
 
 }

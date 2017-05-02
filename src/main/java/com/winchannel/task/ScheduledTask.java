@@ -31,7 +31,7 @@ public class ScheduledTask {
     
   
 
-    @Scheduled(cron = "0 26 15 * * ? ")
+    @Scheduled(cron = "0 43 18 * * ? ")
     public void cleanFileDirTask_T1(){
     	Thread current = Thread.currentThread();
     	current.setName(Constant.T1);
@@ -59,7 +59,7 @@ public class ScheduledTask {
     }
     
     
-    @Scheduled(cron = "0 26 15 * * ? ")
+    @Scheduled(cron = "0 43 18 * * ? ")
     public void cleanFileDirTask_T2(){
     	Thread current = Thread.currentThread();
     	current.setName(Constant.T2);
@@ -203,13 +203,13 @@ public class ScheduledTask {
     	info("开始处理 T_ID_POOL,SIZE="+T_ID_POOL.size());
     	
     	Photo photo = null;
-    	
+    	Long curr_id = null;
     	try{
     		if(T_ID_POOL!=null && T_ID_POOL.size()>0){
         		
         		for(int index=0;index<T_ID_POOL.size();index++){
         			
-        			Long curr_id = T_ID_POOL.get(index);
+        			curr_id = T_ID_POOL.get(index);
         			
         			System.out.println("处理ID："+curr_id);
         			
@@ -217,9 +217,15 @@ public class ScheduledTask {
         			ScheduledUtil.markIdInfo2_MarkMap(currentT,curr_id);
         			
         			// 等待200 毫秒，以便察看效果
-        			Thread.sleep(200);
+//        			Thread.sleep(200);
         			
-        			photo = cleanFileDirService.getPhotoOne(curr_id);
+        			if(curr_id!=null){
+        				photo = cleanFileDirService.getPhotoOne(curr_id);
+        			} else {
+        				System.out.println("ID is NUll : "+curr_id);
+        				continue;
+        			}
+        			
         			
         			if(photo == null){
         				continue;
@@ -241,6 +247,7 @@ public class ScheduledTask {
         		return true;
         	}
     	}catch(Exception e){
+    		System.out.println("cleanPathHandler() ---> 错误ID："+curr_id);
     		e.printStackTrace();
     	}
     		
@@ -338,7 +345,7 @@ public class ScheduledTask {
     
     
     
-    @Scheduled(cron = "0 26 15 * * ? ")
+//    @Scheduled(cron = "0 26 15 * * ? ")
     public void cleanFileDirTask() { // 间隔3分钟执行一次任务
         Thread current = Thread.currentThread();
         info("开始进行文件目录清理 线程 ：:" + current.getId() + ",name:" + current.getName());
