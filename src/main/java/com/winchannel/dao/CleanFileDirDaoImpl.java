@@ -36,14 +36,19 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         
         Long reduce_num = PropUtil.REDUCE_ID_NUM;
         
-        Long flag_id = reduce_num+startID;
+        Long flag_id = reduce_num + startID;
         
         List<Long> id_pool = new ArrayList<Long>();
         
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        
         try {
-            String sql = "SELECT ID from VISIT_PHOTO where ID<? ORDER BY ID";
+            String sql = "SELECT ID from "+table_name+" where ID>=? AND ID<= ? ORDER BY ID";
             pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, flag_id);
+            
+            pstmt.setLong(1, startID);// 开始ID
+            pstmt.setLong(2, flag_id);// 结束ID
+            
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -64,8 +69,9 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
         PreparedStatement pstmt;
         Photo photo = null;
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try {
-            String sql = "SELECT * FROM VISIT_PHOTO_T WHERE id=?";
+            String sql = "SELECT * FROM "+table_name+" WHERE id=?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -89,9 +95,15 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         Connection conn = this.getConnection();
         PreparedStatement pstmt;
         List<Photo> photoList = new ArrayList<Photo>();
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try {
             // 按照 ID 排序得到第一个
-            String oneSql = "SELECT top 1 ID,IMG_ID,IMG_URL,ABSOLUTE_PATH from VISIT_PHOTO_T ORDER BY ID";
+        	String oneSql = "";
+        	if(PropUtil.IS_MYSQL){
+        		oneSql = "SELECT ID,IMG_ID,IMG_URL,ABSOLUTE_PATH from "+table_name+" ORDER BY ID LIMIT 1";
+        	} else if (PropUtil.IS_SQLSERVER){
+        		oneSql = "SELECT top 1 ID,IMG_ID,IMG_URL,ABSOLUTE_PATH from "+table_name+" ORDER BY ID";
+        	}
             pstmt = conn.prepareStatement(oneSql);
             ResultSet rs = pstmt.executeQuery();
             //int col = rs.getMetaData().getColumnCount();
@@ -113,7 +125,14 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
     @Override
     public String getFuncCodeByImgId(String imgId) {
-        String[] tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
+    	
+        String[] tabNames = null;
+        if(PropUtil.IS_TEST){
+        	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
+        } else {
+        	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
+        }
+        		
         String funcCode = "";
         try {
             logger.info("遍历FUNC_CODE相关的表数组 START ...");
@@ -137,11 +156,14 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
         Connection conn = this.getConnection();
         PreparedStatement pstmt;
+        
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        
         // 设置事务为非自动提交
         try{
             // 设置手动处理事务
             conn.setAutoCommit(false);
-            String sql  ="UPDATE VISIT_PHOTO_T SET IMG_URL=?,ABSOLUTE_PATH=? WHERE ID=?";
+            String sql  ="UPDATE "+table_name+" SET IMG_URL=?,ABSOLUTE_PATH=? WHERE ID=?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,photo.getImgUrl());
             pstmt.setString(2,photo.getImgAbsPath());
@@ -167,9 +189,18 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
     public Long selectPhotoMaxId() {
         Connection conn = this.getConnection();
         PreparedStatement pstmt;
+        
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        
         try{
-            String sql = "SELECT top 1 max(ID) ID FROM VISIT_PHOTO_T";
-            pstmt = conn.prepareStatement(sql);
+            String oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
+        	if(PropUtil.IS_MYSQL){
+        		oneSql = "SELECT max(ID) ID FROM "+table_name+" LIMIT 1";
+        	} else if (PropUtil.IS_SQLSERVER){
+        		oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
+        	}
+        	
+            pstmt = conn.prepareStatement(oneSql);
             ResultSet rs = pstmt.executeQuery();
             if(rs.next()){
                 Long ID = rs.getLong("ID");
@@ -223,22 +254,46 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
 	@Override
 	public Long selectPhotoMinId() {
-		 Connection conn = this.getConnection();
-	        PreparedStatement pstmt;
-	        try{
-	            String sql = "SELECT top 1 min(ID) ID FROM VISIT_PHOTO_T";
-	            pstmt = conn.prepareStatement(sql);
-	            ResultSet rs = pstmt.executeQuery();
-	            if(rs.next()){
-	                Long ID = rs.getLong("ID");
-	                if (ID!=null){
-	                    return ID;
-	                }
-	            }
-	        }catch (Exception e){
-	            e.printStackTrace();
-	        }
-	        return null;
+		Connection conn = this.getConnection();
+        PreparedStatement pstmt;
+        
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        
+        try{
+            String sql = "";
+            if(PropUtil.IS_MYSQL){
+            	sql = "SELECT min(ID) ID FROM "+table_name+" LIMIT 1";
+        	} else if (PropUtil.IS_SQLSERVER){
+        		sql = "SELECT top 1 min(ID) ID FROM "+table_name+"";
+        	}
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+                Long ID = rs.getLong("ID");
+                if (ID!=null){
+                    return ID;
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+	}
+
+
+	@Override
+	public void updatePhotoImgId(Long ID) {
+		Connection conn = this.getConnection();
+        PreparedStatement pstmt;
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        try{
+            String sql = "update "+table_name+" set IMG_ID='img_id_ok' WHERE ID=?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, ID);
+            pstmt.executeUpdate();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 	}
 
 

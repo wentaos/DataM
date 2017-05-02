@@ -29,7 +29,8 @@ public interface CleanFileDirDao {
      * 根据起始ID 和 prop配置中的 REDUCE_ID_NUM 得到下一组 ID_POOL
      */
     List<Long> getNextIdPoolByStartID(Long startID);
-    
-    
 
+	void updatePhotoImgId(Long ID);
+    
+    
 }

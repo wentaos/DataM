@@ -50,10 +50,13 @@ public class PropUtil {
     // 一个线程一次处理的ID数
     public static Long REDUCE_ID_NUM = Long.parseLong(getValue(Constant.REDUCE_ID_NUM).trim());
     
+    // 是否测试：配合数据库使用
+    public static boolean IS_TEST = "1".equals(getValue(Constant.IS_TEST))?true:false;
     
+    // 判断是什么数据库
+    public static boolean IS_MYSQL = Constant.DB_NAME_MYSQL.equals(getValue(Constant.DB_NAME))?true:false;
+    public static boolean IS_SQLSERVER = Constant.DB_NAME_SQLSERVER.equals(getValue(Constant.DB_NAME))?true:false;
     
-    
-
     
     /*****************************************************************************************/
     
@@ -61,15 +64,26 @@ public class PropUtil {
     	if(Constant.T1.equals(TNo)){
     		// 清空ID_POOL
         	Memory.T1_ID_POOL.clear();
-        	
-        	
-        	
+        	// 从prop中加载ID信息数据
+    		// 此时的CURR_ID就是开始的ID
+    		Long startId = Long.parseLong(T1_CURR_ID);
+    		Long endId = Long.parseLong(T1_END_ID);
+    		
+    		for(Long id=startId;id<=endId;id++){
+    			Memory.T1_ID_POOL.add(id);
+    		}
+    		
         	return Memory.T1_ID_POOL;
     	} else if(Constant.T2.equals(TNo)){
     		// 清空ID_POOL
         	Memory.T2_ID_POOL.clear();
-        	
-        	
+        	// 从prop中加载ID信息数据
+        	Long startId = Long.parseLong(T2_CURR_ID);
+    		Long endId = Long.parseLong(T2_END_ID);
+    		
+    		for(Long id=startId;id<=endId;id++){
+    			Memory.T2_ID_POOL.add(id);
+    		}
         	
         	return Memory.T2_ID_POOL;
     	}
@@ -80,16 +94,28 @@ public class PropUtil {
     
     /**
      * 根据Prop中的ID信息组装 MARK_MAP
+     * 放到内存轮询操作
      */
     public static Map<String,Long> groupMarkMap(){
     	Map<String,Long> MARK_MAP = new HashMap<String,Long>();
     	MARK_MAP.put(Constant.T1_START_ID, Long.parseLong(T1_START_ID));
-    	MARK_MAP.put(Constant.T1_END_ID, Long.parseLong(T1_END_ID));
     	MARK_MAP.put(Constant.T1_CURR_ID, Long.parseLong(T1_CURR_ID));
+    	MARK_MAP.put(Constant.T1_END_ID, Long.parseLong(T1_END_ID));
     	
     	MARK_MAP.put(Constant.T2_START_ID, Long.parseLong(T2_START_ID));
-    	MARK_MAP.put(Constant.T2_END_ID, Long.parseLong(T2_END_ID));
     	MARK_MAP.put(Constant.T2_CURR_ID, Long.parseLong(T2_CURR_ID));
+    	MARK_MAP.put(Constant.T2_END_ID, Long.parseLong(T2_END_ID));
+    	
+    	// 比较哪个线程的END_ID最大，当作多个线程最终的最大ID
+    	// 做个线程操作最终的最大ID
+    	if(Long.parseLong(T2_END_ID) > Long.parseLong(T1_END_ID)){
+    		Memory.MARK_MAP.put(Constant.CURR_MAX_ID, Long.parseLong(T2_END_ID));
+    		PropUtil.setProp(Constant.CURR_MAX_ID, Long.parseLong(T2_END_ID)+"");
+    	} else {
+    		Memory.MARK_MAP.put(Constant.CURR_MAX_ID, Long.parseLong(T1_END_ID));
+    		PropUtil.setProp(Constant.CURR_MAX_ID, Long.parseLong(T1_END_ID)+"");
+    	}
+		
     	return MARK_MAP;
     }
     

@@ -80,14 +80,16 @@ public class CleanFileDirServiceImpl implements CleanFileDirService {
 
 
 	/**
-	 * 获取前10000
+	 * 
 	 */
 	@Override
 	public List<Long> getNextIdPoolByStartID(Long startID) {
-		
-		
-		
-		return null;
+		return cleanFileDirDao.getNextIdPoolByStartID(startID);
+	}
+
+	@Override
+	public void updatePhotoImgId(Long ID) {
+		cleanFileDirDao.updatePhotoImgId(ID);
 	}
 
 

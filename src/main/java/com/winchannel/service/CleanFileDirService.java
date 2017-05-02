@@ -21,5 +21,7 @@ public interface CleanFileDirService {
     Long getPhotoMaxId();
     
     List<Long> getNextIdPoolByStartID(Long startId);
+
+	void updatePhotoImgId(Long ID);
     
 }
