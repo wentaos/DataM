@@ -35,7 +35,6 @@ public class CleanFileTool {
      * 如果存在就师傅和规则的，不用处理了
      */
     public static boolean isTruePath(Photo photo) {
-    	
     	String absPath = photo.getImgAbsPath();
     	Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     	Matcher matcher = pattern.matcher(absPath);
@@ -49,15 +48,6 @@ public class CleanFileTool {
     				return true;
     			}
     	}
-       /* String funcCode = photo.getFuncCode();
-        String[] ds = photo.getImgAbsPath().split("/");
-        String date_imgName_path = ds[ds.length - 2] + "/" + ds[ds.length - 1];
-        String absolutePath = photo.getImgAbsPath();
-        if (absolutePath.toLowerCase().contains(
-                (funcCode + "/" + date_imgName_path)
-        )) {
-            return true;
-        }*/
         return false;
     }
 
@@ -78,7 +68,7 @@ public class CleanFileTool {
         String PHOTO_PATH = PropUtil.PHOTO_PATH;
         String datePath = getDatePathFromAbsolutionPath(absolutePath);
         String code_date_path = funcCodePath + "/" + datePath;// 这里获取到的是 相对路径
-        code_date_path = createPath(PHOTO_PATH+"/"+code_date_path);
+        code_date_path = createPath(PHOTO_PATH+ "/" +code_date_path);
         return code_date_path;
     }
 
@@ -168,21 +158,26 @@ public class CleanFileTool {
         return path;
     }
 
+    
+   
 
     /**
      * 剪切文件
      */
     public static boolean movePhoto(String sourcePath, String destPath) {
+    	
+    	String sysSourcePath = sourcePath.replace("/", File.separator);// 换成系统的分隔符
+    	String sysDestPath = destPath.replace("/", File.separator);// 换成系统的分隔符
+    	
         // 复制0
-        boolean copyOk = copyPhoto(sourcePath, destPath);
+        boolean copyOk = copyPhoto(sysSourcePath, sysDestPath);
         try {
             if (copyOk) {
                 // 删除源文件
-                deletePhoto(sourcePath);
-//                deletePhoto("D:\\/Photo_Test\\/photos\\/2017-01-12\\/101.jpg");
+                deletePhoto(sysSourcePath);
             }
             // eg: D:/aaa/2017-02-23
-            String dateFullPath = sourcePath.substring(0, sourcePath.lastIndexOf("/"));
+            String dateFullPath = sysSourcePath.substring(0, sysSourcePath.lastIndexOf(File.separator));
             // 检查对应的原日期目录中是否还有图片，没有图片，删除整个日期目录
             if (isEmptyPath(dateFullPath)) {
                 // 删除日期目录

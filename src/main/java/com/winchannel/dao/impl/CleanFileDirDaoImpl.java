@@ -1,16 +1,20 @@
-package com.winchannel.dao;
+package com.winchannel.dao.impl;
 
-import com.winchannel.bean.Photo;
-import com.winchannel.utils.DBUtil;
-import com.winchannel.utils.PropUtil;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import com.winchannel.bean.Photo;
+import com.winchannel.dao.CleanFileDirDao;
+import com.winchannel.utils.DBUtil;
+import com.winchannel.utils.PropUtil;
 
 
 @Repository
@@ -31,7 +35,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 	@Override
 	public List<Long> getNextIdPoolByStartID(Long startID) {
 		
-		Connection conn = this.getConnection();
+		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
 
         PreparedStatement pstmt;
         
@@ -68,7 +72,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 	
 	
     public Photo selectPhotoOne(Long id) throws SQLException {
-        Connection conn = this.getConnection();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
 
         PreparedStatement pstmt;
         Photo photo = null;
@@ -95,7 +99,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
     }
 
     public List<Photo> selectPhotoList() {
-        Connection conn = this.getConnection();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         List<Photo> photoList = new ArrayList<Photo>();
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
@@ -109,7 +113,6 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         	}
             pstmt = conn.prepareStatement(oneSql);
             ResultSet rs = pstmt.executeQuery();
-            //int col = rs.getMetaData().getColumnCount();
 
             while (rs.next()) {
                 Photo photo = new Photo();
@@ -131,9 +134,9 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
     	
         String[] tabNames = null;
         if(PropUtil.IS_TEST){
-        	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
+        	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_AVCT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
         } else {
-        	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
+        	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_AVCT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
         }
         		
         String funcCode = "";
@@ -141,7 +144,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
             logger.info("遍历FUNC_CODE相关的表数组 START ...");
             for (String TABLE_NAME : tabNames) {
                 // 这里先用于测试
-                funcCode = "FAC_123";// selectFuncCodeFrom(TABLE_NAME, imgId);
+                funcCode = selectFuncCodeFrom(TABLE_NAME, imgId);
                 if (funcCode != null && funcCode.length() > 0) {
                     logger.info("获取到对应的 FUNC_CODE：FUNC_CODE=" + funcCode);
                     break;
@@ -155,10 +158,44 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         return null;
     }
 
+    
+    public String selectFuncCodeFrom(String TABLE_NAME, String imgId) {
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt;
+        String funcCode = "";
+        try {
+        	String IMG_ID_COL_NAME = "IMG_IDX";
+        	String MS_VISIT_AVCT_TAB = "MS_VISIT_AVCT";
+        	 if(PropUtil.IS_TEST){
+        		 MS_VISIT_AVCT_TAB = "MS_VISIT_AVCT_T";
+        	 }
+        	
+        	if(MS_VISIT_AVCT_TAB.toLowerCase().equals(TABLE_NAME.toLowerCase())){
+        		IMG_ID_COL_NAME = "IMG_ID";
+        	}
+        	
+            String sql = "SELECT FUNC_CODE FROM " + TABLE_NAME + " WHERE "+IMG_ID_COL_NAME+"=?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, imgId);
+            logger.info("查询表" + TABLE_NAME + " 中 FUNC_CODE ... BY "+IMG_ID_COL_NAME+"=" + imgId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                funcCode = rs.getString("FUNC_CODE");
+                logger.info("获取到FUNC_CODE = " + funcCode);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return funcCode;
+    }
+
+    
+    
     @Override
     public int updatePhoto(Photo photo) {
 
-        Connection conn = this.getConnection();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
@@ -192,7 +229,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
     @Override
     public Long selectPhotoMaxId() {
-        Connection conn = this.getConnection();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
@@ -221,33 +258,9 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
     }
 
 
-    public String selectFuncCodeFrom(String TABLE_NAME, String imgId) {
-        Connection conn = this.getConnection();
-        PreparedStatement pstmt;
-        String funcCode = "";
-        try {
-            String sql = "SELECT FUNC_CODE FROM " + TABLE_NAME + " WHERE IMG_ID=?";
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, imgId);
-            logger.info("查询表" + TABLE_NAME + " 中 FUNC_CODE ... BY IMG_ID=" + imgId);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                funcCode = rs.getString("FUNC_CODE");
-                logger.info("获取到FUNC_CODE = " + funcCode);
-            }
-            DBUtil.closeDbResources(conn, pstmt, rs);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return funcCode;
-    }
-
-
-
-
 	@Override
 	public Long selectPhotoMinId() {
-		Connection conn = this.getConnection();
+		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
@@ -277,7 +290,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
 
 	@Override
 	public void updatePhotoImgId(Long ID) {
-		Connection conn = this.getConnection();
+		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try{
@@ -291,17 +304,56 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         }
 	}
 
-    private Connection getConnection() {
-        Connection conn = null;
-        try {
-            Class.forName(driver);
-            conn = DriverManager.getConnection(dbUrl, userName, passWord);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+    
+    /**
+     * 用于测试
+     */
+	@Override
+	public void insertPhoto(Photo photo) {
+		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt;
+        String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        try{
+            String photoSql = "insert into "+table_name+"(IMG_ID,IMG_URL,ABSOLUTE_PATH)"+" VALUES(?,?,?)";
+            pstmt = conn.prepareStatement(photoSql);
+//            pstmt.setLong(1, photo.getId());
+            pstmt.setString(1, photo.getImgId());
+            pstmt.setString(2,photo.getImgUrl());
+            pstmt.setString(3,photo.getImgAbsPath());
+            pstmt.executeUpdate();
+            
+            DBUtil.closeDbResources(conn, pstmt, null);
+        }catch (Exception e){
             e.printStackTrace();
         }
-        return conn;
-    }
-
+	}
+	/**
+	 * 用于测试
+	 */
+	@Override
+	public void inserFuncCodeTable(String funcCodeTable,Photo photo){
+		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt;
+        try{
+        	String IMG_ID_COL_NAME = "IMG_IDX";
+        	if("MS_VISIT_AVCT_T".toLowerCase().equals(funcCodeTable.toLowerCase())){
+        		IMG_ID_COL_NAME = "IMG_ID";
+        	}
+        	
+            String funcCodeSql = "insert into "+funcCodeTable+"(ID,"+IMG_ID_COL_NAME+",FUNC_CODE"+") VALUES(?,?,?)";
+            pstmt = conn.prepareStatement(funcCodeSql);
+            pstmt.setLong(1,photo.getId());
+            pstmt.setString(2, photo.getImgId());
+            pstmt.setString(3, photo.getFuncCode());
+            pstmt.executeUpdate();
+            
+            DBUtil.closeDbResources(conn, pstmt, null);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+	}
+	
+	
+	
+	
 }

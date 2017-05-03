@@ -12,6 +12,9 @@ public class Photo implements Serializable{
     private String imgId;
     private String imgUrl;
     private String imgAbsPath;
+    /**
+     * VISIT_PHOTO表中 本身并不包含，这里是中途存放方便使用
+     */
     private String funcCode;
 
     public Photo(){}

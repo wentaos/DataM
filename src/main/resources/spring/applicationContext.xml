@@ -37,4 +37,6 @@
  	<task:scheduler id="scheduler" pool-size="10" />
 	<task:annotation-driven executor="executor" scheduler="scheduler" />
 	
+	<bean name="cleanFileDirDao" class="com.winchannel.dao.impl.CleanFileDirDaoImpl"></bean>
+	
 </beans>

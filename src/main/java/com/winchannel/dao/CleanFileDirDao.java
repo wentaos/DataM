@@ -5,9 +5,6 @@ import java.util.List;
 
 import com.winchannel.bean.Photo;
 
-/**
- * Created by qiaoboxiang on 2017/4/26.
- */
 public interface CleanFileDirDao {
 
     /**
@@ -31,6 +28,9 @@ public interface CleanFileDirDao {
     List<Long> getNextIdPoolByStartID(Long startID);
 
 	void updatePhotoImgId(Long ID);
-    
-    
+	
+	void insertPhoto(Photo photo);
+
+	void inserFuncCodeTable(String funcCodeTable,Photo photo);
+
 }

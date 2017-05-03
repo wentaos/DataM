@@ -4,8 +4,6 @@ public class Constant {
 	
 	public static String RUN_TASK_TIME_LEN = "RUN_TASK_TIME_LEN";// 任务运行时长
 	
-	public static String MARK_PHOTO_ID = "MARK_PHOTO_ID";// 图片ID
-	
 	public static String PHOTO_PATH = "PHOTO_PATH";// 需要处理的图片文件路径
 	
 	/**
@@ -17,6 +15,9 @@ public class Constant {
 	/**
 	 * 下面是线程中操作ID信息
 	 */
+	
+	public static String GET_PROP_IMG_ID = "GET_PROP_IMG_ID";
+	
 	public static String T1_START_ID = "T1_START_ID";// 线程1中开始ID
 	
 	public static String T1_END_ID = "T1_END_ID";// 线程1中结束ID
@@ -53,4 +54,7 @@ public class Constant {
 	public static String DB_NAME_MYSQL = "MYSQL";
 	public static String DB_NAME_SQLSERVER = "SQLSERVER";
 	public static String DB_NAME = "DB_NAME";
+	
+	
+	
 }

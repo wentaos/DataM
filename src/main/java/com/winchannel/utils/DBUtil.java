@@ -1,12 +1,31 @@
 package com.winchannel.utils;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBUtil {
 	
+	/**
+	 * 获取连接
+	 */
+	public static Connection getConnection(String driver,String dbUrl,String userName,String passWord) {
+		Connection conn = null;
+		try {
+			Class.forName(driver);
+			conn = DriverManager.getConnection(dbUrl, userName, passWord);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return conn;
+	}
+	
+	
+
 	/**
 	 * 关闭连接
 	 */

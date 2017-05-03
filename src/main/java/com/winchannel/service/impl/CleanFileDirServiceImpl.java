@@ -1,14 +1,15 @@
 package com.winchannel.service.impl;
 
-import com.winchannel.bean.Photo;
-import com.winchannel.dao.CleanFileDirDao;
-import com.winchannel.service.CleanFileDirService;
+import java.sql.SQLException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
-import java.util.List;
+import com.winchannel.bean.Photo;
+import com.winchannel.dao.CleanFileDirDao;
+import com.winchannel.dao.PropDao;
+import com.winchannel.service.CleanFileDirService;
 
 
 @Service
@@ -16,6 +17,9 @@ public class CleanFileDirServiceImpl implements CleanFileDirService {
 
     @Autowired
     private CleanFileDirDao cleanFileDirDao;
+    @Autowired
+    private PropDao propDao;
+    
 
     @Override
     public Photo getPhotoOne(Long id) throws SQLException {
@@ -91,6 +95,8 @@ public class CleanFileDirServiceImpl implements CleanFileDirService {
 	public void updatePhotoImgId(Long ID) {
 		cleanFileDirDao.updatePhotoImgId(ID);
 	}
+
+	
 
 
 }

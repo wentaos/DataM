@@ -1,36 +1,69 @@
 package com.winchannel.task;
 
-import java.util.Map;
-
+import com.winchannel.bean.Photo;
 import com.winchannel.utils.Constant;
-import com.winchannel.utils.PropUtil;
 
 public class ScheduledUtil {
 	
+	
 	/**
-	 * 检查是否是首次运行
+	 * 判断是否是程序挂掉后重启运行
 	 */
-	public static boolean isFirstRun(){
-		String testTsartId = PropUtil.getValue(Constant.T1_START_ID);
-		if(testTsartId==null || testTsartId.length()==0){
+	public static boolean isExistMemoryData(){
+		Long T1_CURR_ID = Memory.MARK_MAP.get(Constant.T1_CURR_ID);
+		// 内存中没有数据
+		if(T1_CURR_ID==null || T1_CURR_ID==0){
 			return true;
 		}
 		return false;
 	}
 	
+	
 	/**
-	 * 判断是否是程序挂掉后重启运行
+		PropUtil.setProp(Constant.T1_START_ID,Memory.T1_ID_POOL.get(0)+"");
+		PropUtil.setProp(Constant.T1_CURR_ID,Memory.T1_ID_POOL.get(0)+"");
+		PropUtil.setProp(Constant.T1_END_ID,Memory.T1_ID_POOL.get(Memory.T1_ID_POOL.size()-1)+"");
+		
+		PropUtil.setProp(Constant.T2_START_ID,Memory.T2_ID_POOL.get(0)+"");
+		PropUtil.setProp(Constant.T2_CURR_ID,Memory.T2_ID_POOL.get(0)+"");
+		PropUtil.setProp(Constant.T2_END_ID,Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)+"");
+		
+		// 多个线程操作的最大ID
+		// PropUtil.setProp(Constant.CURR_MAX_ID,Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)+"");
 	 */
-	public static boolean isReRun(){
-		if(!isFirstRun()){
-			Long T1_CURR_ID = Memory.MARK_MAP.get(Constant.T1_CURR_ID);
-			// 内存中没有数据
-			if(T1_CURR_ID==null || T1_CURR_ID==0){
-				return true;
-			}
-		}
-		return false;
+	public static Photo groupFirstProp(){
+    	StringBuffer img_url_buf = new StringBuffer();
+		img_url_buf
+			// T1线程
+			.append(Memory.T1_ID_POOL.get(0)).append("-")// T1_START_ID
+			.append(Memory.T1_ID_POOL.get(0)).append("-")// T1_CURR_ID
+			.append(Memory.T1_ID_POOL.get(Memory.T1_ID_POOL.size()-1)).append("-")// T1_END_ID
+			// T2 线程
+			.append(Memory.T2_ID_POOL.get(0)).append("-")// T2_START_ID
+			.append(Memory.T2_ID_POOL.get(0)).append("-")// T2_CURR_ID
+			.append(Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)).append("-")// T2_END_ID
+			// MAX_ID
+			.append(Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)) ;// CURR_MAX_ID
+		
+		Photo prop = new Photo();
+		prop.setImgId(Constant.GET_PROP_IMG_ID);
+		prop.setImgUrl(img_url_buf.toString());
+		return prop;
+    }
+    
+	public static void groupFirstMarkMap(){
+		Memory.MARK_MAP.put(Constant.T1_START_ID, Memory.T1_ID_POOL.get(0));
+		Memory.MARK_MAP.put(Constant.T1_CURR_ID, Memory.T1_ID_POOL.get(0));
+		Memory.MARK_MAP.put(Constant.T1_END_ID, Memory.T1_ID_POOL.get(Memory.T1_ID_POOL.size()-1));
+		
+		Memory.MARK_MAP.put(Constant.T2_START_ID, Memory.T2_ID_POOL.get(0));
+		Memory.MARK_MAP.put(Constant.T2_CURR_ID, Memory.T2_ID_POOL.get(0));
+		Memory.MARK_MAP.put(Constant.T2_END_ID, Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1));
+		
+		// 做个线程操作最终的最大ID
+		Memory.MARK_MAP.put(Constant.CURR_MAX_ID, Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1));
 	}
+	
 	
 	
 	
@@ -51,25 +84,5 @@ public class ScheduledUtil {
 		}
 	}
 	
-	 /**
-     * 记录线程中的相关ID信息
-     */
-    public static void bakThreadMapIdInfo2Prop(Map<String,Long> MARK_MAP){
-    	Long T1_START_ID = MARK_MAP.get(Constant.T1_START_ID);
-    	Long T1_END_ID = MARK_MAP.get(Constant.T1_END_ID);
-    	Long T1_CURR_ID = MARK_MAP.get(Constant.T1_CURR_ID);
-    	
-    	Long T2_START_ID = MARK_MAP.get(Constant.T2_START_ID);
-    	Long T2_END_ID = MARK_MAP.get(Constant.T2_END_ID);
-    	Long T2_CURR_ID = MARK_MAP.get(Constant.T2_CURR_ID);
-    	
-    	PropUtil.setProp(Constant.T1_START_ID, T1_START_ID+"");
-    	PropUtil.setProp(Constant.T1_END_ID,T1_END_ID+"");
-    	PropUtil.setProp(Constant.T1_CURR_ID,T1_CURR_ID+"");
-    	PropUtil.setProp(Constant.T2_START_ID, T2_START_ID+"");
-    	PropUtil.setProp(Constant.T2_END_ID,T2_END_ID+"");
-    	PropUtil.setProp(Constant.T2_CURR_ID,T2_CURR_ID+"");  	
-    }
-	
-
+    
 }
