@@ -20,7 +20,7 @@ public class PropUtil {
     private static String resourceFilePath = "spring/config/option.properties";
     
     private static Properties prop = new Properties();
-
+    
     /** 需要处理得路径 */
     public static String PHOTO_PATH = photoPath();
     
@@ -29,6 +29,9 @@ public class PropUtil {
 
     // 一个线程一次处理的ID数
     public static Long REDUCE_ID_NUM = Long.parseLong(getValue(Constant.REDUCE_ID_NUM).trim());
+    
+    // 遍历多少次保存一次ID信息
+    public static int LOOP_SAVE_COUNT = Integer.parseInt(getValue("LOOP_SAVE_COUNT"));
     
     // 是否测试：配合数据库使用
     public static boolean IS_TEST = "1".equals(getValue(Constant.IS_TEST))?true:false;
@@ -54,8 +57,6 @@ public class PropUtil {
         }
     }
 
-    
-    
     public static String getValue(String key){
         String value = null;
        try{
@@ -101,9 +102,7 @@ public class PropUtil {
 
     @Test
     public void sadsa(){
-    	Long l1 = 127L;
-    	Long l2 = 127L;
-    	System.out.println(l1==(l2));
+    	System.out.println(Long.MAX_VALUE);
     }
     
 }

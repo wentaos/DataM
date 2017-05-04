@@ -14,5 +14,5 @@ public interface PropService {
     Map<String,Long> selectProp();
     
     
-	void groupMemoryData();
+	void groupMemoryData(Map<String, Long> infoMap);
 }

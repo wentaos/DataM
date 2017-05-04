@@ -36,8 +36,6 @@ public class Constant {
 	// 一个线程一次处理的ID数
 	public static String REDUCE_ID_NUM = "REDUCE_ID_NUM";
 	
-	
-	
 	/**
 	 *  相关表明称
 	 */

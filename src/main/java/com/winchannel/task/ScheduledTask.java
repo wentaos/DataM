@@ -17,6 +17,7 @@ import com.winchannel.service.PropService;
 import com.winchannel.utils.CleanFileTool;
 import com.winchannel.utils.Constant;
 import com.winchannel.utils.DateUtil;
+import com.winchannel.utils.PropUtil;
 
 /**
  * 分隔符：
@@ -34,9 +35,9 @@ public class ScheduledTask {
     
     Calendar calendar = Calendar.getInstance();
     
-    
+    int LOOP_SAVE_COUNT = PropUtil.LOOP_SAVE_COUNT;
 
-    @Scheduled(cron = "0 47 19 * * ? ")
+    @Scheduled(cron = "${T1_CRON}")
     public void cleanFileDirTask_T1(){
     	
      	Thread current = Thread.currentThread();
@@ -69,7 +70,7 @@ public class ScheduledTask {
     }
     
     
-    @Scheduled(cron = "05 47 19 * * ? ")
+    @Scheduled(cron = "${T2_CRON}")
     public void cleanFileDirTask_T2(){
     	Thread current = Thread.currentThread();
     	current.setName(Constant.T2);
@@ -110,6 +111,9 @@ public class ScheduledTask {
     	// 判断是否第一次运行，如果数据库中没有prop这个记录
     	Map<String,Long> infoMap = propService.selectProp();
     	
+    	// 最大ID
+    	Long maxId = cleanFileDirService.getPhotoMaxId();
+    	
     	// 是否是首次运行
     	if(infoMap==null){
     		Long minId = cleanFileDirService.getPhotoMinId();
@@ -123,7 +127,7 @@ public class ScheduledTask {
     		
     		// 记录ID_POOL信息到 数据库和 MAR_MAP 中
     		// 顺序T1_START_ID-T1_CURR_ID-T1_END_ID-T2_START_ID-T2_CURR_ID-T2_END_ID-CURR_MAX_ID
-    		Photo prop = ScheduledUtil.groupFirstProp();
+    		Photo prop = ScheduledUtil.groupFirstProp(maxId);
     		propService.insertProp(prop);
     		
     		// 第一次组织 MARK_MAP
@@ -138,7 +142,7 @@ public class ScheduledTask {
     			// 如果是挂掉重启,将Prop中的数据装载到MARK_MAP中
     			// 内部同时设置CURR_MAX_ID(MARK_MAP中的和Prop中的)
     			// 重新组织 T_ID_POOL:根据T_CURR_ID 和 END_ID生成新的T_ID_POOL
-    			propService.groupMemoryData();
+    			propService.groupMemoryData(infoMap);
     			
     		} else {// 这就是正常运行过程中需要重新分配 T_ID_POOL
     			
@@ -186,7 +190,7 @@ public class ScheduledTask {
     	    		Memory.MARK_MAP.put(Constant.T2_CURR_ID, Memory.T2_ID_POOL.get(0));
     	    		Memory.MARK_MAP.put(Constant.T2_END_ID, Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1));
     				
-    	    		CURR_MAX_ID = Memory.T1_ID_POOL.get(Memory.T2_ID_POOL.size()-1);
+    	    		CURR_MAX_ID = Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1);
     			}
     			
     			// 设置当前最大ID
@@ -209,7 +213,6 @@ public class ScheduledTask {
     private boolean cleanPathHandler(Thread currentT,List<Long> T_ID_POOL) throws SQLException{
 		// 需要处理的最大ID
 //        	Long maxPhotoId = cleanFileDirService.getPhotoMaxId();
-    	
     	info("开始处理 T_ID_POOL,SIZE="+T_ID_POOL.size());
     	
     	Photo photo = null;
@@ -238,8 +241,16 @@ public class ScheduledTask {
     				continue;
     			}
     			
+    			String absolutePath = photo.getImgAbsPath();
+    			String imgUrl = photo.getImgUrl();
+    			boolean containsDot2B = false;
+    			// 判断是否包含 dot2B
+    			if(imgUrl!=null && imgUrl.contains("dot2B")){// 说明是新数据
+    				containsDot2B = true;
+    			}
+    			
     			// 判断该Photo是否已经是一个符合规则的路径
-                if (CleanFileTool.isTruePath(photo)) {
+                if (CleanFileTool.isTruePath2(photo)) {
                     // 如果是符合规则的路径，就继续下一个Photo
                     continue;
                 }
@@ -257,24 +268,37 @@ public class ScheduledTask {
 
                     // 处理日期目录  得到 D:/Photo_Test/photos/FUNC_CODE/2017-01-23 这层目录
                     @SuppressWarnings("unused")
-                    String codeDateFullPath = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgAbsPath());
-
+                    String codeDateFullPath = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgUrl());
+                    
                     // 开始move文件 
-                    String absolutePath = photo.getImgAbsPath();
                     // 在原绝对路径基础上加上FUNC_CODE目录
-                    String newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE);
+                    String newAbsPath = "";
                     // 移动文件到新目录
                     // 注意：方法内需要对路径中的分隔符处理
-                    boolean moveFileOk = CleanFileTool.movePhoto(absolutePath, newAbsPath);
+                    boolean moveFileOk = false;
 
+                    if(containsDot2B){// 有绝对路径数据
+                    	newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE);
+                    	moveFileOk = CleanFileTool.movePhoto(absolutePath, newAbsPath);
+                    } else {
+                    	newAbsPath = CleanFileTool.getNewAbsPath(new String[]{imgUrl,FUNC_CODE});
+                    	moveFileOk = CleanFileTool.movePhoto(new String[]{imgUrl,newAbsPath});
+                    }
+                    
                     if (moveFileOk) {
                         // 更新数据库:需要更新photo的 absolute_path 和 img_url
                         String newImgUrl = CleanFileTool.getNewImgUrl(photo.getImgUrl(),FUNC_CODE);
+                        // TODO ？对于老数据绝对路径需不需要保存
                         photo.setImgAbsPath(newAbsPath);// 修改绝对路径
                         photo.setImgUrl(newImgUrl);// 修改img_url
                         cleanFileDirService.updatePhoto(photo);
                         info("移动文件成功！");
                     }
+                }
+                
+                // 检查LOOP次数 是否满100*N，是则update ID信息
+                if((index % LOOP_SAVE_COUNT==0) && index!=0){
+                	propService.updateByMap(Memory.MARK_MAP);
                 }
 
     		}

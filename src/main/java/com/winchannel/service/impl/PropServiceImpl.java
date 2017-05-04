@@ -55,9 +55,9 @@ public class PropServiceImpl implements PropService{
 	
 
 	@Override
-	public void groupMemoryData() {
+	public void groupMemoryData(Map<String, Long> infoMap) {
 		// 先查询出prop数据
-		Map<String,Long> infoMap = selectProp();
+//		Map<String,Long> infoMap = selectProp();
 		
 		/**处理ID_POOL*/
 		Memory.T1_ID_POOL.clear();
@@ -79,7 +79,6 @@ public class PropServiceImpl implements PropService{
 		
 		/**后面是MARK_MAP*/
 		Memory.MARK_MAP = infoMap;
-		
 		
 	}
 

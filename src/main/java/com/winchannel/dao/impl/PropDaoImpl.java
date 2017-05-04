@@ -35,16 +35,21 @@ public class PropDaoImpl implements PropDao{
 		Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
 		PreparedStatement pstmt;
 		String table_name = PropUtil.IS_TEST ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
-
+		table_name="VISIT_PHOTO";
+		
 		try {
-			String sql = "INSERT INTO " + table_name + "(IMG_ID,IMG_URL) VALUES(?,?)";
+			// 得到最大ID
+//			Long maxId = selectMaxId();
+			
+			String sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
 			if(PropUtil.IS_TEST){
-				sql = "INSERT INTO " + table_name + "(IMG_ID,IMG_URL) VALUES(?,?)";
+				sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
 			}
 			
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, prop.getImgId());
-			pstmt.setString(2, prop.getImgUrl());
+			pstmt.setLong(1, 999999999);// 这里使用9位最大值
+			pstmt.setString(2, prop.getImgId());
+			pstmt.setString(3, prop.getImgUrl());
 			
 			pstmt.executeUpdate();
 			
@@ -55,13 +60,35 @@ public class PropDaoImpl implements PropDao{
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	public Long selectMaxId(){
+		Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
+		PreparedStatement pstmt;
+		ResultSet rs;
+		try {
+			String sql = "SELECT MAX(ID) ID FROM VISIT_PHOTO";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			if(rs.next()){
+				Long maxId = rs.getLong("ID");
+				return maxId;
+			}
+			DBUtil.closeDbResources(conn, pstmt, null);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0L;
+	}
+	
 
 	@Override
 	public void updateProp(Photo prop) {
 		Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
 		PreparedStatement pstmt;
 		String table_name = PropUtil.IS_TEST ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
-
+		table_name="VISIT_PHOTO";
+		
 		try {
 			String sql = "UPDATE " + table_name + " SET IMG_URL=? WHERE IMG_ID=?";
 			
@@ -86,6 +113,7 @@ public class PropDaoImpl implements PropDao{
         PreparedStatement pstmt;
         Photo photo = null;
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        table_name="VISIT_PHOTO";
         
         try {
         	String queryCol = "ID,IMG_ID,IMG_URL,ABSOLUTE_PATH";

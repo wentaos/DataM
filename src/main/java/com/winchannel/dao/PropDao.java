@@ -22,6 +22,8 @@ public interface PropDao {
 	 * 使用一个固定的标识：img_id,这个属性值我们自己定义
 	 */
 	Photo selectProp();
+
+	Long selectMaxId();
 	
 	
 }

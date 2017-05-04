@@ -31,7 +31,7 @@ public class ScheduledUtil {
 		// 多个线程操作的最大ID
 		// PropUtil.setProp(Constant.CURR_MAX_ID,Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)+"");
 	 */
-	public static Photo groupFirstProp(){
+	public static Photo groupFirstProp(Long maxId){
     	StringBuffer img_url_buf = new StringBuffer();
 		img_url_buf
 			// T1线程
@@ -42,8 +42,15 @@ public class ScheduledUtil {
 			.append(Memory.T2_ID_POOL.get(0)).append("-")// T2_START_ID
 			.append(Memory.T2_ID_POOL.get(0)).append("-")// T2_CURR_ID
 			.append(Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)).append("-")// T2_END_ID
+			;
+		
+		// 如果所有的ID还不足希望的一个轮询达到的数，比如还不到1000，那么maxId<1000,这时候所有的ID都在T1_ID_POOL 中，T1_ID_POOL没有数据
+		if(Memory.T1_ID_POOL.get(Memory.T1_ID_POOL.size()-1)>=maxId){// maxId 包含在T1_ID_POOL 中
 			// MAX_ID
-			.append(Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)) ;// CURR_MAX_ID
+			img_url_buf.append(Memory.T1_ID_POOL.get(Memory.T1_ID_POOL.size()-1)) ;// CURR_MAX_ID
+		}else{
+			img_url_buf.append(Memory.T2_ID_POOL.get(Memory.T2_ID_POOL.size()-1)) ;// CURR_MAX_ID
+		}
 		
 		Photo prop = new Photo();
 		prop.setImgId(Constant.GET_PROP_IMG_ID);

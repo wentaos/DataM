@@ -1,12 +1,18 @@
 package com.winchannel.utils;
 
-import com.winchannel.bean.Photo;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import java.io.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.winchannel.bean.Photo;
 
 /**
  * 内容中：涉及到的路径是基于 D:/aaa/bbb/2017-02-12/j23h43h24234324h32ui4hf.jpg 这种格式
@@ -36,20 +42,58 @@ public class CleanFileTool {
      */
     public static boolean isTruePath(Photo photo) {
     	String absPath = photo.getImgAbsPath();
-    	Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
-    	Matcher matcher = pattern.matcher(absPath);
+    	
+    	// 如果没有绝对路径，直接忽略掉
+    	if(absPath==null || absPath.trim().length()==0){
+    		return true;
+    	}
     	// absPath 如：D:/Photo_Test/photos/2017-01-12/101.jpg
-    	if(matcher.find()){
-    		String date = matcher.group();
-    			String photos = absPath.split(date)[0];// 得到 D:/Photo_Test/photos/
-    			String tail = photos.split("photos")[1];// 得到 /
-    			// 如果长度够长，中间会包含FUNC_CODE目录
-    			if(tail.length()>3){
-    				return true;
-    			}
+    	String date = getDatePathFromUrl(absPath);
+    	if(date!=null){
+    		String photos = absPath.split(date)[0];// 得到 D:/Photo_Test/photos/
+			String tail = photos.split("photos")[1];// 得到 /
+			// 如果长度够长，中间会包含FUNC_CODE目录
+			if(tail.length()>3){
+				return true;
+			}
     	}
         return false;
     }
+    
+    // 通用版本：对于老数据，没有ABSOLUTE_PATH 数据
+    public static boolean isTruePath2(Photo photo) {
+    	
+    	// 2012年的数据没有ABSOLUTE_PATH数据,并且没有dot2B 这种分隔符
+    	String imgUrl = photo.getImgUrl();
+    	// 数据格式：.../photos/2012-01-01/xxx.jpg 	/media/Ddot1Adot2BPhoto_Testdot2Bphotosdot2B2017-01-01dot2B8.jpg
+    	
+    	// 为空直接忽略掉
+    	if(imgUrl==null || imgUrl.trim().length()==0){
+    		return true;
+    	}
+    	
+    	String date = getDatePathFromUrl(imgUrl);
+    	
+    	if(date!=null){
+    		// 两种情况，一种是使用/分割的，一种是使用dot2B分割的
+			String photos = imgUrl.split(date)[0];// 得到 /media/Ddot1Adot2BPhoto_Testdot2Bphotosdot2B  或者 .../photos/
+			String tail = photos.split("photos")[1];// 得到 / 或者 dot2B
+			if(tail!=null && tail.trim().length()>0){
+				if(tail.contains("dot2B") && tail.trim().length()>10){// 里面包含两个dot2B：dot2BFAC_123dot2B
+					return true;
+				} else if(tail.contains("/") && tail.trim().length()>2){// 里面包含两个 /: /FAC_123/
+					return true;
+				}
+			}
+    	}
+    	
+    	return false;
+    }
+    
+    
+    
+    
+    
 
     /**
      * 判断创建 FUNC_CODE 对应的目录
@@ -63,30 +107,20 @@ public class CleanFileTool {
 
     /**
      * 对日期目录进行处理
+     * 这里使用 imgUrl：在老数据中 ABSOLUTE_PATH 没有数据
+     * imgUrl：/photos/2013-01-01/xxx.jpg
      */
-    public static String cleanDatePath(String funcCodePath, String absolutePath) {
-        String PHOTO_PATH = PropUtil.PHOTO_PATH;
-        String datePath = getDatePathFromAbsolutionPath(absolutePath);
-        String code_date_path = funcCodePath + "/" + datePath;// 这里获取到的是 相对路径
-        code_date_path = createPath(PHOTO_PATH+ "/" +code_date_path);
+    public static String cleanDatePath(String funcCodePath, String imgUrl) {
+    	String PHOTO_PATH = PropUtil.PHOTO_PATH;
+    	String code_date_path = "";
+    	if(imgUrl!=null && imgUrl.trim().length()>0){
+    		String date = getDatePathFromUrl(imgUrl);
+    		if(date!=null){
+    			code_date_path=funcCodePath+ File.separator+date;
+    			code_date_path = createPath(PHOTO_PATH+ File.separator +code_date_path);
+    		}
+    	}
         return code_date_path;
-    }
-
-
-    /**
-     * 截取图片日期部分 2016-07-28
-     *
-     * @param \ D:/APP/SFA_demo/webapps/ROOT/photos/2016-07-28/b5f6ebf8-eb7f-44ef-bd5d-8843bcd74706.jpg
-     */
-    public static String getDatePathFromAbsolutionPath(String absolutePath) {
-        if (absolutePath != null && absolutePath.length() > 0) {
-            int lastP1 = absolutePath.lastIndexOf("/");
-            String subPath = absolutePath.substring(0, lastP1);
-            int lastP2 = subPath.lastIndexOf("/");
-            String date = subPath.substring(lastP2 + 1);
-            return date;
-        }
-        return null;
     }
 
 
@@ -107,11 +141,11 @@ public class CleanFileTool {
     /**
      * 获取文件名部分apth
      */
-    public static String getFileNamePath(String absolutePath) {
-        if (absolutePath == null) {
+    public static String getFileNamePath(String url) {
+        if (url == null) {
             return null;
         }
-        String fileNamePath = absolutePath.substring(absolutePath.lastIndexOf("/") + 1);
+        String fileNamePath = url.substring(url.lastIndexOf("/") + 1);
         return fileNamePath;
     }
 
@@ -122,9 +156,17 @@ public class CleanFileTool {
      */
     public static String getNewAbsPath(String absolutePath, String funcCodePath) {
         String headPath = getHeadPath(absolutePath);
-        String datePath = getDatePathFromAbsolutionPath(absolutePath);
+        String datePath = getDatePathFromUrl(absolutePath);
         String fileNamePath = getFileNamePath(absolutePath);
         String newAbsPath = headPath + "/" + funcCodePath + "/" + datePath + "/" + fileNamePath;
+        return newAbsPath;
+    }
+    
+    public static String getNewAbsPath(String[] paths) {
+        String headPath = PropUtil.PHOTO_PATH;
+        String datePath = getDatePathFromUrl(paths[0]);
+        String fileNamePath = getFileNamePath(paths[0]);
+        String newAbsPath = headPath + "/" + paths[1] + "/" + datePath + "/" + fileNamePath;
         return newAbsPath;
     }
 
@@ -135,17 +177,33 @@ public class CleanFileTool {
     public static String getNewImgUrl(String oldImgUrl, String funcCodePath) {
         String newImgUrl = null;
         if (oldImgUrl != null) {
-            Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
-            Matcher m = p.matcher(oldImgUrl);
-            if (m.find()) {
-                String datePath = m.group();
+        	String date = getDatePathFromUrl(oldImgUrl);
+        	newImgUrl = date;// 保证原来的数据没问题
+            if (date!=null) {
                 // 替换
-                newImgUrl = oldImgUrl.replace(datePath, funcCodePath + "dot2B" + datePath);
+                newImgUrl = oldImgUrl.replace(date, funcCodePath + "dot2B" + date);
             }
         }
         return newImgUrl;
     }
 
+    
+    /**
+     * 截取图片日期部分 2016-07-28
+     * @param \ D:/APP/SFA_demo/webapps/ROOT/photos/2016-07-28/b5f6ebf8-eb7f-44ef-bd5d-8843bcd74706.jpg
+     */
+    public static String getDatePathFromUrl(String url) {
+    	String date = "";
+		Pattern p = Pattern.compile("2\\d{3}-?[0-1][0-9]-?[0-3][0-9]");
+		Matcher m = p.matcher(url);
+		if(m.find()){
+			date = m.group();
+			return date;
+		}
+        return null;
+    }
+    
+    
     /**
      * 判断目录是否存在，不存在则创建
      */
@@ -193,6 +251,41 @@ public class CleanFileTool {
     }
 
 
+    
+    /**
+     * 剪切文件
+     */
+    public static boolean movePhoto(String[] paths) {
+    	String PHOTO_PATH = PropUtil.PHOTO_PATH;
+    	String sysSourcePath = PHOTO_PATH 
+    									  + paths[0].replace("/", File.separator);// imgUrl 换成系统的分隔符
+    	String sysDestPath = paths[1].replace("/", File.separator);// 换成系统的分隔符
+    	
+        // 复制0
+        boolean copyOk = copyPhoto(sysSourcePath, sysDestPath);
+        try {
+            if (copyOk) {
+                // 删除源文件
+                deletePhoto(sysSourcePath);
+            }
+            // eg: D:/aaa/2017-02-23
+            String dateFullPath = sysSourcePath.substring(0, sysSourcePath.lastIndexOf(File.separator));
+            // 检查对应的原日期目录中是否还有图片，没有图片，删除整个日期目录
+            if (isEmptyPath(dateFullPath)) {
+                // 删除日期目录
+                new File(dateFullPath).delete();
+                return true;
+            } else {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    
+    
     /**
      * 检查目录中是否还存在文件
      */
@@ -265,18 +358,6 @@ public class CleanFileTool {
     }
 
 
-    @Test
-    public void test1() {
-        String fi = "D:/Photo_Test/photos/2017-01-12/101.jpg";
-        Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
-    	Matcher matcher = pattern.matcher(fi);
-    	if(matcher.find()){
-    		String date = matcher.group();
-    			String photos = fi.split(date)[0];
-    			String tail = photos.split("photos")[1];
-    			System.out.print(tail);
-    	}
-    }
 
 
 }
