@@ -134,9 +134,9 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
     	
         String[] tabNames = null;
         if(PropUtil.IS_TEST){
-        	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_AVCT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
+        	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
         } else {
-        	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_AVCT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
+        	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
         }
         		
         String funcCode = "";
@@ -165,12 +165,12 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         String funcCode = "";
         try {
         	String IMG_ID_COL_NAME = "IMG_IDX";
-        	String MS_VISIT_AVCT_TAB = "MS_VISIT_AVCT";
+        	String MS_VISIT_ACVT = "MS_VISIT_ACVT";
         	 if(PropUtil.IS_TEST){
-        		 MS_VISIT_AVCT_TAB = "MS_VISIT_AVCT_T";
+        		 MS_VISIT_ACVT = "MS_VISIT_ACVT_T";
         	 }
         	
-        	if(MS_VISIT_AVCT_TAB.toLowerCase().equals(TABLE_NAME.toLowerCase())){
+        	if(MS_VISIT_ACVT.toLowerCase().equals(TABLE_NAME.toLowerCase())){
         		IMG_ID_COL_NAME = "IMG_ID";
         	}
         	
@@ -336,7 +336,7 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         PreparedStatement pstmt;
         try{
         	String IMG_ID_COL_NAME = "IMG_IDX";
-        	if("MS_VISIT_AVCT_T".toLowerCase().equals(funcCodeTable.toLowerCase())){
+        	if(funcCodeTable.toLowerCase().contains("MS_VISIT_ACVT".toLowerCase())){
         		IMG_ID_COL_NAME = "IMG_ID";
         	}
         	

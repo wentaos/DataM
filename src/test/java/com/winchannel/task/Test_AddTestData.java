@@ -73,7 +73,7 @@ public class Test_AddTestData {
         	photo.setImgId("img_id_"+i);
         	cleanFileDirDao.insertPhoto(photo);
         	
-        	String[] tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_AVCT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
+        	String[] tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
         	String funcCodeTable = tabNames[new Random().nextInt(4)];
         	
         	// 随机将imgId和funcCode插入到对应的表中

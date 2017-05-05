@@ -43,7 +43,7 @@ public class Constant {
 	public static String VISIT_SEC_DISP = "VISIT_SEC_DISP";
 	public static String VISIT_DIST_RULE = "VISIT_DIST_RULE";
 	public static String VISIT_INOUT_STORE = "VISIT_INOUT_STORE";
-	public static String MS_VISIT_AVCT = "MS_VISIT_AVCT";
+	public static String MS_VISIT_ACVT = "MS_VISIT_ACVT";
 	
 	// 是否使用测试
 	public static String IS_TEST = "IS_TEST";
