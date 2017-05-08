@@ -12,7 +12,7 @@ import com.winchannel.dao.PropDao;
 import com.winchannel.service.CleanFileDirService;
 
 
-@Service
+@Service("cleanService")
 public class CleanFileDirServiceImpl implements CleanFileDirService {
 
     @Autowired

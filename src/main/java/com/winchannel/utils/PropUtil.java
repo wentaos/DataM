@@ -33,6 +33,9 @@ public class PropUtil {
     // 遍历多少次保存一次ID信息
     public static int LOOP_SAVE_COUNT = Integer.parseInt(getValue("LOOP_SAVE_COUNT"));
     
+    // 线程数
+    public static int THREA_NUM = Integer.parseInt(getValue("THREA_NUM"));
+    
     // 是否测试：配合数据库使用
     public static boolean IS_TEST = "1".equals(getValue(Constant.IS_TEST))?true:false;
     

@@ -33,7 +33,7 @@ public class Test_AddTestData {
         String filePath = PropUtil.PHOTO_PATH;
     	
         // 需要复制的图片原文件
-        File sourceFile = new File("D:"+File.separator+"Photo_Test"+File.separator+"photo.jpg");
+//        File sourceFile = new File("D:"+File.separator+"Photo_Test"+File.separator+"photo.jpg");
     	
         // 数据库拼接数据
         // ABSOLUTE_PATH : D:/Photo_Test/photos/2017-01-23/310.jpg；需要拼接 date,再拼接photoName
@@ -57,7 +57,7 @@ public class Test_AddTestData {
         	String ABSOLUTE_PATH = filePath + date + "/" + photoName;
         	
         	// 创建目录中的图片
-        	copyPhoto(sourceFile, ABSOLUTE_PATH);
+//        	copyPhoto(sourceFile, ABSOLUTE_PATH);
         	
         	String IMG_URL = urlHead + date + "dot2B" + photoName;
         	

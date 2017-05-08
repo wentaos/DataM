@@ -235,11 +235,11 @@ public class CleanFileDirDaoImpl implements CleanFileDirDao {
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
         
         try{
-            String oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
+            String oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+" WHERE IMG_ID!='GET_PROP_IMG_ID'";
         	if(PropUtil.IS_MYSQL){
-        		oneSql = "SELECT max(ID) ID FROM "+table_name+" LIMIT 1";
+        		oneSql = "SELECT max(ID) ID FROM "+table_name+" WHERE IMG_ID!='GET_PROP_IMG_ID' LIMIT 1";
         	} else if (PropUtil.IS_SQLSERVER){
-        		oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
+        		oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+" WHERE IMG_ID!='GET_PROP_IMG_ID'";
         	}
         	
             pstmt = conn.prepareStatement(oneSql);

@@ -35,7 +35,6 @@ public class PropDaoImpl implements PropDao{
 		Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
 		PreparedStatement pstmt;
 		String table_name = PropUtil.IS_TEST ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
-		table_name="VISIT_PHOTO";
 		
 		try {
 			// 得到最大ID
@@ -43,13 +42,18 @@ public class PropDaoImpl implements PropDao{
 			
 			String sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
 			if(PropUtil.IS_TEST){
-				sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
+				sql = "INSERT INTO " + table_name + "(IMG_ID,IMG_URL) VALUES(?,?)";
 			}
 			
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setLong(1, 999999999);// 这里使用9位最大值
-			pstmt.setString(2, prop.getImgId());
-			pstmt.setString(3, prop.getImgUrl());
+			if(PropUtil.IS_TEST){
+				pstmt.setString(1, prop.getImgId());
+				pstmt.setString(2, prop.getImgUrl());
+			}else{
+				pstmt.setLong(1, 999999999);// 这里使用9位最大值
+				pstmt.setString(2, prop.getImgId());
+				pstmt.setString(3, prop.getImgUrl());
+			}
 			
 			pstmt.executeUpdate();
 			
@@ -87,7 +91,6 @@ public class PropDaoImpl implements PropDao{
 		Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
 		PreparedStatement pstmt;
 		String table_name = PropUtil.IS_TEST ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
-		table_name="VISIT_PHOTO";
 		
 		try {
 			String sql = "UPDATE " + table_name + " SET IMG_URL=? WHERE IMG_ID=?";
@@ -113,7 +116,6 @@ public class PropDaoImpl implements PropDao{
         PreparedStatement pstmt;
         Photo photo = null;
         String table_name = PropUtil.IS_TEST?"VISIT_PHOTO_T":"VISIT_PHOTO";
-        table_name="VISIT_PHOTO";
         
         try {
         	String queryCol = "ID,IMG_ID,IMG_URL,ABSOLUTE_PATH";
