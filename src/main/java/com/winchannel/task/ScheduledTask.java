@@ -37,6 +37,8 @@ public class ScheduledTask {
     
     int LOOP_SAVE_COUNT = PropUtil.LOOP_SAVE_COUNT;
 
+    
+    
     @Scheduled(cron = "${T1_CRON}")
     public void cleanFileDirTask_T1(){
     	
@@ -70,7 +72,7 @@ public class ScheduledTask {
     }
     
     
-    @Scheduled(cron = "${T2_CRON}")
+//    @Scheduled(cron = "${T2_CRON}")
     public void cleanFileDirTask_T2(){
     	Thread current = Thread.currentThread();
     	current.setName(Constant.T2);
@@ -267,8 +269,7 @@ public class ScheduledTask {
 					String funcCodeFullPath = CleanFileTool.cleanFuncCodePath(FUNC_CODE);
 
                     // 处理日期目录  得到 D:/Photo_Test/photos/FUNC_CODE/2017-01-23 这层目录
-                    @SuppressWarnings("unused")
-                    String codeDateFullPath = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgUrl());
+                    String date_OR_F0A_1x2x3x = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgUrl());
                     
                     // 开始move文件 
                     // 在原绝对路径基础上加上FUNC_CODE目录
@@ -278,19 +279,21 @@ public class ScheduledTask {
                     boolean moveFileOk = false;
 
                     if(containsDot2B){// 有绝对路径数据
-                    	newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE);
+                    	newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE,date_OR_F0A_1x2x3x);
                     	moveFileOk = CleanFileTool.movePhoto(absolutePath, newAbsPath);
                     } else {
-                    	newAbsPath = CleanFileTool.getNewAbsPath(new String[]{imgUrl,FUNC_CODE});
+                    	newAbsPath = CleanFileTool.getNewAbsPath(new String[]{imgUrl,FUNC_CODE,date_OR_F0A_1x2x3x});
                     	moveFileOk = CleanFileTool.movePhoto(new String[]{imgUrl,newAbsPath});
                     }
                     
                     if (moveFileOk) {
                         // 更新数据库:需要更新photo的 absolute_path 和 img_url
-                        String newImgUrl = CleanFileTool.getNewImgUrl(photo.getImgUrl(),FUNC_CODE);
+                        String newImgUrl = CleanFileTool.getNewImgUrl(photo.getImgUrl(),FUNC_CODE,date_OR_F0A_1x2x3x);
                         // TODO ？对于老数据绝对路径需不需要保存
                         photo.setImgAbsPath(newAbsPath);// 修改绝对路径
-                        photo.setImgUrl(newImgUrl);// 修改img_url
+                        if(newImgUrl!=null){
+                        	photo.setImgUrl(newImgUrl);// 修改img_url
+                        }
                         cleanFileDirService.updatePhoto(photo);
                         info("移动文件成功！");
                     }
@@ -311,7 +314,19 @@ public class ScheduledTask {
     
     
     
-    
+
+//  @Autowired
+  private MyThread myThread;
+  
+//  @Scheduled(cron = "0 46 10 * * ?")
+  public void cleanFileDirTask_Tn(){
+  	for(int i=0;i<3;i++){
+  		// 获取新对象
+  		myThread = new MyThread("Thread"+i);//(MyThread)SpringContextUtil.getBean("myThread");
+  		myThread.start();
+  	}
+  	
+  }
     
 
 
