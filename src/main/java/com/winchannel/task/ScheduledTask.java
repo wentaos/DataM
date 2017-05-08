@@ -314,11 +314,11 @@ public class ScheduledTask {
     
     
     
-
-//  @Autowired
+/*
+  @Autowired
   private MyThread myThread;
   
-//  @Scheduled(cron = "0 46 10 * * ?")
+  @Scheduled(cron = "0 46 10 * * ?")
   public void cleanFileDirTask_Tn(){
   	for(int i=0;i<3;i++){
   		// 获取新对象
@@ -326,7 +326,7 @@ public class ScheduledTask {
   		myThread.start();
   	}
   	
-  }
+  }*/
     
 
 
@@ -338,6 +338,10 @@ public class ScheduledTask {
         logger.info(info);
     }
 
+    public void debug(String debug) {
+        logger.error(debug);
+    }
+    
     public void error(String error) {
         logger.error(error);
     }
